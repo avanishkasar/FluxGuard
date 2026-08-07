@@ -1,52 +1,29 @@
 # FluxGuard
 
-A production-style API rate limiter built with FastAPI and Redis (Sliding Window algorithm).
+A robust API rate limiter built using the **Sliding Window algorithm** with Redis. 
+
+I built this project specifically to test my system design skills and deeply understand how distributed systems handle traffic spikes, prevent abuse, and manage state efficiently. 
+
+## The Architecture
+- **Algorithm:** Sliding Window (Atomic Lua scripts prevent race conditions)
+- **Backend:** FastAPI + Redis (fakeredis for local testing)
+- **Frontend:** React + Tailwind (Note: The UI design is sourced for presentability, but the core system design, architecture, and logic are entirely my own work).
 
 ## How it works
+1. Extracts client IP.
+2. Removes requests older than the 60-second window.
+3. Checks if the remaining requests exceed the limit (10).
+4. If exceeded, returns `429 Too Many Requests`. Otherwise, logs the request.
 
-Every incoming request goes through middleware that checks a Redis sorted set:
-1. Remove timestamps older than 60 seconds
-2. Count how many remain — if ≥ 10, reject with `429 Too Many Requests`
-3. Otherwise add the current timestamp and allow the request
-
-Returns standard headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`
-
-## Run locally
-
+## Run Locally
 ```bash
+# Start backend
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Open `http://localhost:8000` → live dashboard
-
-## Test it
-
+## Stress Test
 ```bash
 python stress_test.py
 ```
-
-Sends 15 requests — first 10 pass, last 5 are blocked with 429.
-
-## File structure
-
-```
-FluxGuard/
-├── main.py          → FastAPI app + middleware + routes
-├── limiter.py       → Sliding window logic (Redis/fakeredis)
-├── dashboard.html   → Live monitoring UI
-├── stress_test.py   → Test script to trigger rate limits
-└── requirements.txt
-```
-
-## Algorithms comparison
-
-| Algorithm | Pros | Cons |
-|---|---|---|
-| Fixed Window | Simple | Burst at window boundary |
-| Token Bucket | Allows bursts | State harder to manage |
-| **Sliding Window** ← (this project) | **No boundary burst, fair** | Slightly more memory |
-
-## Stack
-
-- Python · FastAPI · fakeredis (swap with real Redis for production)
+*Screenshots of the system blocking traffic will be added here.*

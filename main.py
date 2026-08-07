@@ -6,6 +6,8 @@ from limiter import is_allowed, get_stats, reset_ip
 app = FastAPI(title="FluxGuard - Rate Limiter")
 
 
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
 # --- Middleware ---
 # Runs before every single request. Checks if the IP is allowed.
 @app.middleware("http")
@@ -13,7 +15,7 @@ async def rate_limit_middleware(request: Request, call_next):
     ip = request.client.host
 
     # Skip rate limiting for the dashboard and stats endpoints
-    if request.url.path in ["/", "/stats", "/reset"]:
+    if request.url.path in ["/", "/stats"] or request.url.path.startswith("/reset") or request.url.path.startswith("/assets"):
         return await call_next(request)
 
     allowed, remaining = is_allowed(ip)
