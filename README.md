@@ -22,8 +22,12 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-## Stress Test
-```bash
-python stress_test.py
-```
-*Screenshots of the system blocking traffic will be added here.*
+## Screenshots
+
+### 1. Landing Interface (Dashboard)
+The landing section features a minimalist, pixel-perfect design to provide a clean and professional introduction to the project.
+![Landing Interface](https://github.com/avanishkasar/FluxGuard/blob/master/flux1.png?raw=true)
+
+### 2. Live Rate Limiter Visualization (Result Dashboard)
+A real-time dashboard displaying active IP addresses, their current request count within the 60-second window, and their current rate-limit status.
+![Live Traffic Visualization](https://github.com/avanishkasar/FluxGuard/blob/master/flux2.png?raw=true)
