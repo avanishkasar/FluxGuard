@@ -38,7 +38,7 @@ async def rate_limit_middleware(request: Request, call_next):
 # --- Dashboard ---
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    with open("dashboard.html") as f:
+    with open("index.html") as f:
         return f.read()
 
 

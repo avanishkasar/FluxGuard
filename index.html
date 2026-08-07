@@ -164,9 +164,41 @@
   <footer>FluxGuard · Sliding Window Algorithm · fakeredis (local)</footer>
 
   <script>
+    let isDemoMode = false;
+
     async function refresh() {
-      const res  = await fetch('/stats');
-      const data = await res.json();
+      let data;
+      try {
+        const res  = await fetch('/stats');
+        if (!res.ok) throw new Error('Backend offline');
+        data = await res.json();
+      } catch (err) {
+        // Mock data for GitHub Pages live demo when backend is absent
+        if (!window.mockData) {
+            window.mockData = {
+                '192.168.1.105': { requests_in_window: 2, limit: 10, remaining: 8 },
+                '10.0.0.42': { requests_in_window: 8, limit: 10, remaining: 2 },
+                '172.16.254.1': { requests_in_window: 10, limit: 10, remaining: 0 },
+                '13.120.44.11': { requests_in_window: 0, limit: 10, remaining: 10 }
+            };
+        }
+        
+        // Randomly simulate traffic
+        Object.keys(window.mockData).forEach(ip => {
+            let stats = window.mockData[ip];
+            if (Math.random() > 0.4) stats.requests_in_window = Math.min(15, stats.requests_in_window + Math.floor(Math.random() * 4));
+            if (Math.random() > 0.7 && stats.requests_in_window > 0) stats.requests_in_window = Math.max(0, stats.requests_in_window - Math.floor(Math.random() * 5));
+            stats.remaining = Math.max(0, stats.limit - stats.requests_in_window);
+        });
+        
+        data = window.mockData;
+        
+        if (!isDemoMode) {
+            isDemoMode = true;
+            document.querySelector('.meta').innerHTML += ' &nbsp;|&nbsp; <b style="color:#ef4444">Simulation Mode (No Backend)</b>';
+        }
+      }
+
       const keys = Object.keys(data);
       const empty = document.getElementById('empty');
       const table = document.getElementById('table');
@@ -210,6 +242,12 @@
     }
 
     async function resetIP(ip) {
+      if (isDemoMode) {
+          window.mockData[ip].requests_in_window = 0;
+          window.mockData[ip].remaining = window.mockData[ip].limit;
+          refresh();
+          return;
+      }
       await fetch('/reset/' + ip, { method: 'POST' });
       refresh();
     }
